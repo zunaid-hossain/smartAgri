@@ -10,7 +10,7 @@ export default function AiAssistant() {
   const [chatMessages, setChatMessages] = useState([
     {
       role: "assistant",
-      text: "আমি আপনার SmartAgri সহকারী। সর্বশেষ সেন্সর ডেটা দেখে বাংলায় পরামর্শ দেব।",
+      text: "আমি আপনার Bangla AI সহকারী। যেকোনো প্রশ্ন করুন, আমি বাংলায় উত্তর দেব।",
     },
   ]);
   const [message, setMessage] = useState("");
@@ -158,7 +158,7 @@ export default function AiAssistant() {
           </div>
           <div>
             <h2 className="text-lg font-semibold text-slate-950">AI chatbox</h2>
-            <p className="text-sm text-slate-500">Bangla answers from latest field data</p>
+            <p className="text-sm text-slate-500">Ask anything and get answers in Bangla</p>
           </div>
         </div>
 

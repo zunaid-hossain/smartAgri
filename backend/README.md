@@ -23,7 +23,7 @@ uvicorn main:app --reload
 - `GET /history?limit=100` historical readings
 - `GET /ai-recommendation` generate and store Bangla Gemini recommendation
 - `GET /ai-recommendations?limit=20` previous stored AI recommendations
-- `POST /ai-chat` Bangla AI chat using the latest sensor reading
+- `POST /ai-chat` general Bangla AI chat with optional latest sensor context
 - `GET /system-status` dashboard status data
 
 ## Render

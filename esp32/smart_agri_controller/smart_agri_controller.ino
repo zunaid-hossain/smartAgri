@@ -119,13 +119,12 @@ const char *API_URL = "https://smartagri-pv49.onrender.com/sensor-data";
 const bool RELAY_ACTIVE_LOW = true;
 const int DRY_ADC = 3200;
 const int WET_ADC = 1200;
+const int SOIL_SAMPLES = 10;
 const unsigned long SEND_INTERVAL_MS = 30000;
 const unsigned long WIFI_TIMEOUT_MS = 20000;
 const unsigned long HTTP_TIMEOUT_MS = 30000;
 
 // NPK values are sent as field readings for the dashboard and AI recommendation.
-const int SOIL_MOISTURE_MIN = 35;
-const int SOIL_MOISTURE_MAX = 85;
 const int NITROGEN_MIN = 20;
 const int NITROGEN_MAX = 80;
 const int PHOSPHORUS_MIN = 5;
@@ -200,7 +199,18 @@ void setPump(bool on) {
 }
 
 int readSoilMoisturePercent() {
-  return random(SOIL_MOISTURE_MIN, SOIL_MOISTURE_MAX + 1);
+  long total = 0;
+  for (int i = 0; i < SOIL_SAMPLES; i++) {
+    total += analogRead(SOIL_PIN);
+    delay(10);
+  }
+
+  int raw = total / SOIL_SAMPLES;
+  int percent = map(raw, DRY_ADC, WET_ADC, 0, 100);
+  percent = constrain(percent, 0, 100);
+
+  Serial.printf("Soil raw ADC: %d, moisture: %d%%\n", raw, percent);
+  return percent;
 }
 
 bool connectWiFi() {
@@ -339,6 +349,8 @@ void setup() {
   pinMode(STATUS_LED_PIN, OUTPUT);
   pinMode(RELAY_PIN, OUTPUT);
   setPump(false);
+  analogReadResolution(12);
+  analogSetPinAttenuation(SOIL_PIN, ADC_11db);
 
   dht.begin();
   Wire.begin(21, 22);
@@ -374,8 +386,7 @@ void loop() {
   bool pumpStatus = soilMoisture < 30;
   setPump(pumpStatus);
 
-  Serial.println("Real values: temperature, humidity, pump status");
-  Serial.println("Soil moisture sensor is not working, using field fallback value");
+  Serial.println("Real values: temperature, humidity, soil moisture, pump status");
   Serial.println("NPK values are sent as field readings");
   Serial.printf("T %.1f C, H %.1f %%, Soil %d %%, N %d, P %d, K %d, Pump %s\n",
                 temperature, humidity, soilMoisture, nitrogen, phosphorus, potassium,

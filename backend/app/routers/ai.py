@@ -47,9 +47,6 @@ def ai_recommendation_history(
 @router.post("/ai-chat", response_model=AIChatResponse)
 def ai_chat(payload: AIChatRequest, db: Session = Depends(get_db)):
     sensor_data = db.query(SensorData).order_by(desc(SensorData.created_at)).first()
-    if not sensor_data:
-        raise HTTPException(status_code=404, detail="No sensor data available")
-
     message = payload.message.strip()
     if not message:
         raise HTTPException(status_code=422, detail="Message cannot be empty")
