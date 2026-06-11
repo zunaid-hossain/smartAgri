@@ -62,12 +62,47 @@ Return the response in Bangla. Treat temperature, humidity, soil moisture, nitro
 
 
 def _fallback_chat_reply(sensor_data: SensorData | None, message: str) -> str:
+    normalized = message.strip().lower()
+    greetings = {"hi", "hello", "hey", "salam", "assalamualaikum", "আসসালামু আলাইকুম", "হ্যালো", "হাই"}
+    if normalized in greetings:
+        return "হ্যালো! আমি আপনার Bangla AI সহকারী। আপনি যেকোনো প্রশ্ন করতে পারেন, আমি বাংলায় উত্তর দেব।"
+
+    farming_keywords = (
+        "sensor",
+        "soil",
+        "moisture",
+        "temperature",
+        "humidity",
+        "npk",
+        "pump",
+        "crop",
+        "farm",
+        "irrigation",
+        "fertilizer",
+        "সেন্সর",
+        "মাটি",
+        "আর্দ্রতা",
+        "তাপমাত্রা",
+        "এনপিকে",
+        "পাম্প",
+        "ফসল",
+        "সেচ",
+        "সার",
+        "কৃষি",
+    )
+    asks_about_field = any(keyword in normalized for keyword in farming_keywords)
+
+    if not asks_about_field:
+        return (
+            f"আপনার প্রশ্ন: {message}\n\n"
+            "আমি বাংলায় সাহায্য করতে প্রস্তুত। প্রশ্নটি একটু বিস্তারিত লিখলে আমি আরও ভালোভাবে উত্তর দিতে পারব।"
+        )
+
     if not sensor_data:
         return (
             f"আপনার প্রশ্ন: {message}\n\n"
-            "আমি এখন সাধারণ বাংলায় সাহায্য করতে পারি। তবে Gemini API key সেট করা না থাকায় "
-            "পূর্ণ AI উত্তর তৈরি হচ্ছে না। প্রশ্নটি সহজ হলে আমি সংক্ষিপ্তভাবে বলছি: "
-            "দয়া করে বিষয়টি একটু বিস্তারিত লিখুন, আমি ধাপে ধাপে উত্তর দিতে পারব।"
+            "এখন কোনো সর্বশেষ সেন্সর ডেটা পাওয়া যাচ্ছে না। ESP32 ডিভাইস অনলাইন আছে কি না, "
+            "WiFi সংযোগ এবং ব্যাকএন্ডে ডেটা পাঠানো হচ্ছে কি না পরীক্ষা করুন।"
         )
 
     irrigation = (
@@ -77,7 +112,7 @@ def _fallback_chat_reply(sensor_data: SensorData | None, message: str) -> str:
     )
     return (
         f"আপনার প্রশ্ন: {message}\n\n"
-        "Gemini API key সেট করা নেই, তাই সর্বশেষ সেন্সর ডেটা দিয়ে সংক্ষিপ্ত উত্তর দিচ্ছি: "
+        "সর্বশেষ সেন্সর ডেটা অনুযায়ী: "
         f"তাপমাত্রা {sensor_data.temperature:.1f}°C, আর্দ্রতা {sensor_data.humidity:.1f}%, "
         f"মাটির আর্দ্রতা {sensor_data.soil_moisture:.1f}%, "
         f"N {sensor_data.nitrogen:.1f}, P {sensor_data.phosphorus:.1f}, K {sensor_data.potassium:.1f}। "
