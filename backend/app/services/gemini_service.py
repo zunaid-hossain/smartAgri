@@ -1,4 +1,5 @@
 import logging
+import time
 
 from google import genai
 
@@ -6,6 +7,23 @@ from app.config import get_settings
 from app.models.sensor_data import SensorData
 
 logger = logging.getLogger(__name__)
+GEMINI_RETRY_DELAY_SECONDS = 3600
+_gemini_disabled_until = 0.0
+
+
+def _gemini_is_in_cooldown() -> bool:
+    return time.monotonic() < _gemini_disabled_until
+
+
+def _remember_gemini_failure(exc: Exception) -> str:
+    global _gemini_disabled_until
+
+    error_text = str(exc)
+    if "429" in error_text or "RESOURCE_EXHAUSTED" in error_text or "quota" in error_text.lower():
+        _gemini_disabled_until = time.monotonic() + GEMINI_RETRY_DELAY_SECONDS
+        return "fallback-gemini-quota"
+
+    return "fallback-gemini-error"
 
 
 def _fallback_recommendation(sensor_data: SensorData) -> str:
@@ -30,6 +48,8 @@ def generate_recommendation(sensor_data: SensorData) -> tuple[str, str]:
     settings = get_settings()
     if not settings.gemini_api_key:
         return _fallback_recommendation(sensor_data), "fallback-no-gemini-key"
+    if _gemini_is_in_cooldown():
+        return _fallback_recommendation(sensor_data), "fallback-gemini-quota"
 
     prompt = f"""
 Analyze this smart agriculture sensor reading.
@@ -54,9 +74,10 @@ Return the response in Bangla. Treat temperature, humidity, soil moisture, nitro
     client = genai.Client(api_key=settings.gemini_api_key)
     try:
         response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
-    except Exception:
-        logger.exception("Gemini recommendation generation failed")
-        return _fallback_recommendation(sensor_data), "fallback-gemini-error"
+    except Exception as exc:
+        source = _remember_gemini_failure(exc)
+        logger.warning("Gemini recommendation generation failed: %s", exc)
+        return _fallback_recommendation(sensor_data), source
 
     return response.text or _fallback_recommendation(sensor_data), "gemini"
 
@@ -212,6 +233,8 @@ def generate_chat_reply(sensor_data: SensorData | None, message: str) -> tuple[s
     settings = get_settings()
     if not settings.gemini_api_key:
         return _fallback_chat_reply(sensor_data, message), "fallback-no-gemini-key"
+    if _gemini_is_in_cooldown():
+        return _fallback_chat_reply(sensor_data, message), "fallback-gemini-quota"
 
     sensor_context = "No live sensor reading is available right now."
     if sensor_data:
@@ -243,8 +266,9 @@ Reply in clear Bangla. Be concise but helpful.
     client = genai.Client(api_key=settings.gemini_api_key)
     try:
         response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
-    except Exception:
-        logger.exception("Gemini chat generation failed")
-        return _fallback_chat_reply(sensor_data, message), "fallback-gemini-error"
+    except Exception as exc:
+        source = _remember_gemini_failure(exc)
+        logger.warning("Gemini chat generation failed: %s", exc)
+        return _fallback_chat_reply(sensor_data, message), source
 
     return response.text or _fallback_chat_reply(sensor_data, message), "gemini"
