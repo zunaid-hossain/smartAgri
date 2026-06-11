@@ -67,6 +67,47 @@ def _fallback_chat_reply(sensor_data: SensorData | None, message: str) -> str:
     if normalized in greetings:
         return "হ্যালো! আমি আপনার Bangla AI সহকারী। আপনি যেকোনো প্রশ্ন করতে পারেন, আমি বাংলায় উত্তর দেব।"
 
+    crop_keywords = (
+        "fosol",
+        "fasal",
+        "crop",
+        "crops",
+        "ধান",
+        "চাল",
+        "গম",
+        "সবজি",
+        "ফসল",
+        "কি হবে",
+        "কী হবে",
+        "লাগাব",
+        "চাষ",
+    )
+    weather_keywords = (
+        "weather",
+        "abohawa",
+        "temperature",
+        "humidity",
+        "rain",
+        "বৃষ্টি",
+        "আবহাওয়া",
+        "আবহাওয়া",
+        "তাপমাত্রা",
+        "আর্দ্রতা",
+    )
+    field_status_keywords = (
+        "field",
+        "khet",
+        "khamar",
+        "status",
+        "condition",
+        "obostha",
+        "ক্ষেত",
+        "খেত",
+        "জমি",
+        "বর্তমান",
+        "অবস্থা",
+        "কেমন",
+    )
     farming_keywords = (
         "sensor",
         "soil",
@@ -89,8 +130,24 @@ def _fallback_chat_reply(sensor_data: SensorData | None, message: str) -> str:
         "সেচ",
         "সার",
         "কৃষি",
+        "ক্ষেত",
+        "খেত",
+        "জমি",
+        "fosol",
+        "khet",
+        "abohawa",
+        "weather",
+        "obostha",
     )
-    asks_about_field = any(keyword in normalized for keyword in farming_keywords)
+    asks_about_crop = any(keyword in normalized for keyword in crop_keywords)
+    asks_about_weather = any(keyword in normalized for keyword in weather_keywords)
+    asks_about_field_status = any(keyword in normalized for keyword in field_status_keywords)
+    asks_about_field = (
+        asks_about_crop
+        or asks_about_weather
+        or asks_about_field_status
+        or any(keyword in normalized for keyword in farming_keywords)
+    )
 
     if not asks_about_field:
         return (
@@ -110,6 +167,37 @@ def _fallback_chat_reply(sensor_data: SensorData | None, message: str) -> str:
         if sensor_data.soil_moisture < 30
         else "মাটির আর্দ্রতা এখন গ্রহণযোগ্য, তাই আপাতত সেচের দরকার নেই।"
     )
+
+    if asks_about_crop:
+        return (
+            f"আপনার প্রশ্ন: {message}\n\n"
+            f"বর্তমান ডেটা অনুযায়ী তাপমাত্রা {sensor_data.temperature:.1f}°C, "
+            f"আর্দ্রতা {sensor_data.humidity:.1f}% এবং মাটির আর্দ্রতা "
+            f"{sensor_data.soil_moisture:.1f}%। এই অবস্থায় ধান, পাট, ডাঁটা শাক, "
+            "লাল শাক, পালং শাক, মরিচ, বেগুন বা ঢেঁড়সের মতো গরম ও আর্দ্র আবহাওয়ার "
+            "ফসল ভালো হতে পারে। জমিতে পানি জমে থাকলে সবজির জন্য উঁচু বেড বানান। "
+            "স্থানীয় মৌসুম ও বাজারদর দেখে চূড়ান্ত ফসল নির্বাচন করুন।"
+        )
+
+    if asks_about_weather:
+        return (
+            f"আপনার প্রশ্ন: {message}\n\n"
+            "আমি বাইরের আবহাওয়ার লাইভ ইন্টারনেট রিপোর্ট দেখছি না, তবে আপনার ক্ষেতের "
+            f"DHT11 সেন্সর অনুযায়ী এখন তাপমাত্রা {sensor_data.temperature:.1f}°C এবং "
+            f"বাতাসের আর্দ্রতা {sensor_data.humidity:.1f}%। আর্দ্রতা বেশি হলে ছত্রাকের "
+            "ঝুঁকি বাড়তে পারে, তাই বাতাস চলাচল ভালো রাখুন এবং পাতায় অতিরিক্ত পানি জমতে দেবেন না।"
+        )
+
+    if asks_about_field_status:
+        return (
+            f"আপনার প্রশ্ন: {message}\n\n"
+            f"আপনার ক্ষেতের বর্তমান অবস্থা: তাপমাত্রা {sensor_data.temperature:.1f}°C, "
+            f"আর্দ্রতা {sensor_data.humidity:.1f}%, মাটির আর্দ্রতা "
+            f"{sensor_data.soil_moisture:.1f}%, N {sensor_data.nitrogen:.1f}, "
+            f"P {sensor_data.phosphorus:.1f}, K {sensor_data.potassium:.1f}। "
+            f"{irrigation} আর্দ্রতা বেশি থাকলে রোগের লক্ষণ আছে কি না পাতায় নজর রাখুন।"
+        )
+
     return (
         f"আপনার প্রশ্ন: {message}\n\n"
         "সর্বশেষ সেন্সর ডেটা অনুযায়ী: "
