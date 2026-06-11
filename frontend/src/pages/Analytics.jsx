@@ -62,26 +62,26 @@ export default function Analytics() {
           </ResponsiveContainer>
         </ChartPanel>
 
-        <ChartPanel title="Temperature History">
+        <ChartPanel title="DHT11 Temperature History">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={history}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="created_at" tickFormatter={formatChartTime} minTickGap={24} />
               <YAxis />
               <Tooltip labelFormatter={(value) => new Date(value).toLocaleString()} />
-              <Line type="monotone" dataKey="temperature" stroke="#c47c1d" strokeWidth={2} dot={false} name="Temperature °C" />
+              <Line type="monotone" dataKey="temperature" stroke="#c47c1d" strokeWidth={2} dot={false} name="DHT11 Temperature °C" />
             </LineChart>
           </ResponsiveContainer>
         </ChartPanel>
 
-        <ChartPanel title="Humidity History">
+        <ChartPanel title="DHT11 Humidity History">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={history}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="created_at" tickFormatter={formatChartTime} minTickGap={24} />
               <YAxis domain={[0, 100]} />
               <Tooltip labelFormatter={(value) => new Date(value).toLocaleString()} />
-              <Area type="monotone" dataKey="humidity" stroke="#1b7aa7" fill="#d5edf7" name="Humidity %" />
+              <Area type="monotone" dataKey="humidity" stroke="#1b7aa7" fill="#d5edf7" name="DHT11 Humidity %" />
             </AreaChart>
           </ResponsiveContainer>
         </ChartPanel>
@@ -92,11 +92,11 @@ export default function Analytics() {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="created_at" tickFormatter={formatChartTime} minTickGap={24} />
               <YAxis />
-              <Tooltip labelFormatter={(value) => `${new Date(value).toLocaleString()} · simulated NPK`} />
+              <Tooltip labelFormatter={(value) => `${new Date(value).toLocaleString()} · NPK sensor`} />
               <Legend />
-              <Line type="monotone" dataKey="nitrogen" stroke="#256d3b" strokeWidth={2} dot={false} name="Nitrogen simulated" />
-              <Line type="monotone" dataKey="phosphorus" stroke="#7a5c36" strokeWidth={2} dot={false} name="Phosphorus simulated" />
-              <Line type="monotone" dataKey="potassium" stroke="#c47c1d" strokeWidth={2} dot={false} name="Potassium simulated" />
+              <Line type="monotone" dataKey="nitrogen" stroke="#256d3b" strokeWidth={2} dot={false} name="Nitrogen" />
+              <Line type="monotone" dataKey="phosphorus" stroke="#7a5c36" strokeWidth={2} dot={false} name="Phosphorus" />
+              <Line type="monotone" dataKey="potassium" stroke="#c47c1d" strokeWidth={2} dot={false} name="Potassium" />
             </LineChart>
           </ResponsiveContainer>
         </ChartPanel>

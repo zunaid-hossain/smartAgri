@@ -29,8 +29,16 @@ app.add_middleware(
 def root():
     return {
         "message": "AI-Powered Smart Agriculture Monitoring API is running",
-        "real_sensor_values": ["temperature", "humidity", "soil_moisture", "pump_status"],
-        "simulated_values": ["nitrogen", "phosphorus", "potassium"],
+        "temperature_humidity_sensor": "DHT11",
+        "real_sensor_values": [
+            "temperature",
+            "humidity",
+            "soil_moisture",
+            "nitrogen",
+            "phosphorus",
+            "potassium",
+            "pump_status",
+        ],
     }
 
 

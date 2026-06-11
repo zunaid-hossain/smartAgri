@@ -11,7 +11,7 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: CORS_ORIGINS
-        sync: false
+        value: https://ornate-rugelach-685dee.netlify.app,http://localhost:5173
       - key: DATABASE_URL
         fromDatabase:
           name: smartagri-postgres

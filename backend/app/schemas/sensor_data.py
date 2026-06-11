@@ -4,12 +4,12 @@ from pydantic import BaseModel, Field
 
 
 class SensorDataCreate(BaseModel):
-    temperature: float = Field(ge=-20, le=80)
-    humidity: float = Field(ge=0, le=100)
+    temperature: float = Field(ge=-20, le=80, description="DHT11 temperature sensor value in Celsius")
+    humidity: float = Field(ge=0, le=100, description="DHT11 humidity sensor value in percent")
     soil_moisture: float = Field(ge=0, le=100)
-    nitrogen: float = Field(ge=20, le=80, description="Simulated NPK value")
-    phosphorus: float = Field(ge=5, le=45, description="Simulated NPK value")
-    potassium: float = Field(ge=20, le=100, description="Simulated NPK value")
+    nitrogen: float = Field(ge=20, le=80, description="NPK sensor value")
+    phosphorus: float = Field(ge=5, le=45, description="NPK sensor value")
+    potassium: float = Field(ge=20, le=100, description="NPK sensor value")
     pump_status: bool
 
 
@@ -24,5 +24,5 @@ class SystemStatus(BaseModel):
     sensor_health: str
     wifi_status: str
     last_update_time: datetime | None
-    simulated_values: list[str]
+    seconds_since_last_update: int | None = None
     real_values: list[str]

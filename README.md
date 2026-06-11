@@ -37,16 +37,16 @@ smartagri/
 
 ## System Architecture
 
-ESP32 reads real DHT22 temperature, real DHT22 humidity, and real soil moisture. The NPK sensor is currently defective, so nitrogen, phosphorus, and potassium are generated as realistic simulated values. ESP32 applies the irrigation rule locally, controls the relay-driven water pump, displays live data on the 16x2 I2C LCD, and sends telemetry to FastAPI every 30 seconds.
+ESP32 reads DHT11 temperature and humidity, soil moisture, NPK values, and pump status as field telemetry. ESP32 applies the irrigation rule locally, controls the relay-driven water pump, displays live data on the 16x2 I2C LCD, and sends telemetry to FastAPI every 30 seconds.
 
 FastAPI stores telemetry in PostgreSQL or Supabase through SQLAlchemy. React polls the API every 30 seconds and displays live status, charts, and Gemini-powered Bangla recommendations.
 
 ## Hardware Diagram
 
 ```text
-ESP32 3V3  -> DHT22 VCC
-ESP32 GND  -> DHT22 GND, Soil GND, Relay GND, LCD GND
-ESP32 GPIO4 -> DHT22 DATA
+ESP32 3V3  -> DHT11 VCC
+ESP32 GND  -> DHT11 GND, Soil GND, Relay GND, LCD GND
+ESP32 GPIO4 -> DHT11 DATA
 ESP32 GPIO34 -> Soil Moisture AO
 ESP32 GPIO26 -> Relay IN
 ESP32 5V/VIN -> Relay VCC, LCD VCC
@@ -60,20 +60,15 @@ Pump negative -> External pump supply negative
 
 Use an external pump power supply. Do not power a water pump directly from the ESP32.
 
-## Sensor Data Separation
-
-Real sensor values:
+## Sensor Data
 
 - Temperature
 - Humidity
 - Soil moisture
+- Nitrogen
+- Phosphorus
+- Potassium
 - Pump status
-
-Simulated values because the NPK sensor is defective:
-
-- Nitrogen: `20-80`
-- Phosphorus: `5-45`
-- Potassium: `20-100`
 
 ## Pump Logic
 
@@ -109,9 +104,13 @@ Endpoints:
 
 - `GET /`
 - `POST /sensor-data`
+- `GET /sensor-data/stream`
+- `GET /sensor-data/live`
 - `GET /latest-data`
 - `GET /history`
 - `GET /ai-recommendation`
+- `GET /ai-recommendations?limit=20`
+- `POST /ai-chat`
 - `GET /system-status`
 
 Example ESP32 payload:
@@ -200,7 +199,7 @@ Environment variables:
 
 - `DATABASE_URL`
 - `GEMINI_API_KEY`
-- `CORS_ORIGINS=https://your-frontend.vercel.app`
+- `CORS_ORIGINS=https://ornate-rugelach-685dee.netlify.app,http://localhost:5173`
 - `ENVIRONMENT=production`
 
 You can also deploy with `render.yaml` from the repository root.
@@ -210,7 +209,7 @@ You can also deploy with `render.yaml` from the repository root.
 Import the repository into Vercel, set the frontend root directory to `frontend`, and add:
 
 ```bash
-VITE_API_BASE_URL=https://your-render-service.onrender.com
+VITE_API_BASE_URL=https://smartagri-pv49.onrender.com
 ```
 
 The included `frontend/vercel.json` handles SPA routing.
@@ -230,7 +229,7 @@ Publish directory: dist
 Add this environment variable:
 
 ```bash
-VITE_API_BASE_URL=https://your-render-service.onrender.com
+VITE_API_BASE_URL=https://smartagri-pv49.onrender.com
 ```
 
 The FastAPI backend still needs a server host such as Render because Netlify static hosting cannot run a persistent Python API service.
@@ -251,4 +250,3 @@ git push -u origin main
 - Use PostgreSQL or Supabase in production, not the local SQLite fallback.
 - Add a secret token or device API key before exposing `/sensor-data` publicly.
 - Use calibrated soil moisture ADC values for your specific sensor and soil.
-- Keep the NPK simulated label visible until the physical NPK sensor is repaired.

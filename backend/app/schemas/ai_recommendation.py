@@ -15,3 +15,12 @@ class AIRecommendationResponse(BaseModel):
     recommendation: str
     source: str
     saved: AIRecommendationOut | None = None
+
+
+class AIChatRequest(BaseModel):
+    message: str
+
+
+class AIChatResponse(BaseModel):
+    reply: str
+    source: str

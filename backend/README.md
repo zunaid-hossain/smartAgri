@@ -17,9 +17,13 @@ uvicorn main:app --reload
 
 - `GET /` health and metadata
 - `POST /sensor-data` save ESP32 readings
+- `GET /sensor-data/stream` real-time sensor reading stream for the dashboard
+- `GET /sensor-data/live` latest reading or wait for the next reading
 - `GET /latest-data` latest reading
 - `GET /history?limit=100` historical readings
 - `GET /ai-recommendation` generate and store Bangla Gemini recommendation
+- `GET /ai-recommendations?limit=20` previous stored AI recommendations
+- `POST /ai-chat` Bangla AI chat using the latest sensor reading
 - `GET /system-status` dashboard status data
 
 ## Render

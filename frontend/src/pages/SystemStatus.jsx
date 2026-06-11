@@ -39,7 +39,13 @@ export default function SystemStatus() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <StatusCard title="Sensor Health" value={status?.sensor_health || "Unknown"} detail="Based on latest backend reading" icon={ShieldCheck} tone="field" />
-        <StatusCard title="Last Update Time" value={formatTime(status?.last_update_time)} detail="Expected interval: 30 seconds" icon={Clock} tone="warning" />
+        <StatusCard
+          title="Last Update Time"
+          value={formatTime(status?.last_update_time)}
+          detail={status?.seconds_since_last_update === undefined || status?.seconds_since_last_update === null ? "Expected interval: 30 seconds" : `${status.seconds_since_last_update}s ago`}
+          icon={Clock}
+          tone="warning"
+        />
         <StatusCard title="WiFi Status" value={status?.wifi_status || "Unknown"} detail="ESP32 reports by reaching API" icon={Router} tone="water" />
       </div>
 
@@ -53,11 +59,11 @@ export default function SystemStatus() {
         <div className="mt-5 grid gap-4 md:grid-cols-2">
           <div className="rounded-md bg-slate-50 p-4">
             <p className="text-sm font-semibold text-slate-900">Real sensor values</p>
-            <p className="mt-2 text-sm text-slate-600">{status?.real_values?.join(", ") || "temperature, humidity, soil_moisture, pump_status"}</p>
+            <p className="mt-2 text-sm text-slate-600">{status?.real_values?.join(", ") || "temperature, humidity, soil_moisture, nitrogen, phosphorus, potassium, pump_status"}</p>
           </div>
           <div className="rounded-md bg-slate-50 p-4">
-            <p className="text-sm font-semibold text-slate-900">Simulated values</p>
-            <p className="mt-2 text-sm text-slate-600">{status?.simulated_values?.join(", ") || "nitrogen, phosphorus, potassium"}</p>
+            <p className="text-sm font-semibold text-slate-900">NPK source</p>
+            <p className="mt-2 text-sm text-slate-600">Nitrogen, phosphorus, and potassium are treated as real field sensor readings</p>
           </div>
         </div>
       </section>

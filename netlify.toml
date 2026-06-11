@@ -5,6 +5,7 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  VITE_API_BASE_URL = "https://smartagri-pv49.onrender.com"
 
 [[redirects]]
   from = "/*"
